@@ -1,28 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Lift Library</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <h1>Lift Library</h1>
-        <small>Prototype: log is saved in this browser only</small>
+        <small>log in implemented soon!</small>
     </header>
-    <main>
-        <div>
-            <section>
-                <div id="view"></div>
-                <div id="total"></div>
-                <div id="msg"></div>
-                <div>
-                    <div style="margin:0">
-                        <button id="uLb">lb</button>
-                        <button id="uKg">kg</button>
+    <main class="builder">
+        <div class="content">
+            <section class="card">
+                <h2>Barbell Builder</h2>
+                <div class="view" id="view"></div>
+                <div class="total" id="total"></div>
+                <div class="msg" id="msg" role="status"></div>
+                <div class="row">
+                    <div class="toggle">
+                        <button type="button" id="uLb" class="chip active">lb</button>
+                        <button type="button" id="uKg" class="chip">kg</button>
                     </div>
-                    <button id="undo">Remove outer plates</button>
-                    <button id="clear">Clear all</button>
+                    <button type="button" id="undo">Remove outer plates</button>
+                    <button type="button" id="clear">Clear all</button>
                 </div>
-                <div>
+                <div class="row">
                     <label>Lift name
                         <input id="name" list="lifts" placeholder="e.g. Back squat" maxlength="40">
                     </label>
@@ -37,30 +41,28 @@
                     <label>Date
                         <input id="date" type="date">
                     </label>
-                    <button id="log">Log lift</button>
-                    <button id="cancel" hidden>Cancel edit</button>
+                    <button type="button" id="log" class="primary">Log lift</button>
+                    <button type="button" id="cancel" hidden>Cancel edit</button>
                 </div>
             </section>
-            <div>
-                <section>
+            <div class="panels">
+                <section class="card">
                     <h2 id="pt">Plates</h2>
-                    <div id="plates"></div>
+                    <div class="opts" id="plates"></div>
                 </section>
-                <section>
+                <section class="card">
                     <h2>Bars</h2>
-                    <div id="bars" style="flex-direction:column"></div>
+                    <div class="opts vertical" id="bars"></div>
                 </section>
-                <section>
+                <section class="card">
                     <h2>Cuffs</h2>
-                    <div id="cuffs" style="flex-direction:column"></div>
+                    <div class="opts vertical" id="cuffs"></div>
                 </section>
             </div>
         </div>
-        <aside>
-            <section>
-                <h2>Library</h2>
-                <div id="lib"></div>
-            </section>
+        <aside class="card side">
+            <h2>Library</h2>
+            <div id="lib"></div>
         </aside>
     </main>
 </body>

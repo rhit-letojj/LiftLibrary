@@ -1,20 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Log in - Lift Library</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Lift Library</h1>
-    <a href="home.html">Barbell builder</a>
-    <h2>Log in</h2>
-    <button>Log in</button>
-    <button>Register</button>
-    <form>
-        <p>Username: <input type="text" id="user"></p>
-        <p>Password: <input type="password" id="pass"></p>
-        <p>Confirm password: <input type="password" id="conf"></p>
-        <p><input type="checkbox" id="showpw"> Show password</p>
-        <button type="submit">Log in</button>
-    </form>
+    <header>
+        <h1>Lift Library</h1>
+        <a href="home.html">Barbell builder</a>
+    </header>
+
+    <main class="login">
+        <div class="card">
+            <h2 id="formTitle">Log in</h2>
+
+            <form id="f" novalidate>
+                <label>Username
+                    <input id="user" type="text" maxlength="20">
+                    <span class="err" id="eUser"></span>
+                </label>
+
+                <label>Password
+                    <input id="pass" type="password">
+                    <span class="err" id="ePass"></span>
+                </label>
+
+                <label id="confWrap" hidden>Confirm password
+                    <input id="conf" type="password">
+                    <span class="err" id="eConf"></span>
+                </label>
+
+                <label class="show">
+                    <input id="showpw" type="checkbox">
+                    Show password
+                </label>
+
+                <button class="primary" id="go" type="submit">
+                    Log in
+                </button>
+
+                <div class="msg" id="msg"></div>
+            </form>
+
+            <div class="foot" id="foot">
+                New here? <button type="button" id="switch">Register</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>
