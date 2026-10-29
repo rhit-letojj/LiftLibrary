@@ -1,1 +1,67 @@
-Main Page Here
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Lift Library</title>
+</head>
+<body>
+    <header>
+        <h1>Lift Library</h1>
+        <small>Prototype: log is saved in this browser only</small>
+    </header>
+    <main>
+        <div>
+            <section>
+                <div id="view"></div>
+                <div id="total"></div>
+                <div id="msg"></div>
+                <div>
+                    <div style="margin:0">
+                        <button id="uLb">lb</button>
+                        <button id="uKg">kg</button>
+                    </div>
+                    <button id="undo">Remove outer plates</button>
+                    <button id="clear">Clear all</button>
+                </div>
+                <div>
+                    <label>Lift name
+                        <input id="name" list="lifts" placeholder="e.g. Back squat" maxlength="40">
+                    </label>
+                    <datalist id="lifts">
+                        <option value="Back squat">
+                        <option value="Front squat">
+                        <option value="Bench press">
+                        <option value="Deadlift">
+                        <option value="Overhead press">
+                        <option value="Power clean">
+                    </datalist>
+                    <label>Date
+                        <input id="date" type="date">
+                    </label>
+                    <button id="log">Log lift</button>
+                    <button id="cancel" hidden>Cancel edit</button>
+                </div>
+            </section>
+            <div>
+                <section>
+                    <h2 id="pt">Plates</h2>
+                    <div id="plates"></div>
+                </section>
+                <section>
+                    <h2>Bars</h2>
+                    <div id="bars" style="flex-direction:column"></div>
+                </section>
+                <section>
+                    <h2>Cuffs</h2>
+                    <div id="cuffs" style="flex-direction:column"></div>
+                </section>
+            </div>
+        </div>
+        <aside>
+            <section>
+                <h2>Library</h2>
+                <div id="lib"></div>
+            </section>
+        </aside>
+    </main>
+</body>
+</html>
