@@ -8,7 +8,7 @@ app = flask.Flask(__name__,
             static_folder="public") # can run as an integrated server
 
 # When you want to support multiple origins, you need to check the request origin and set the Access-Control-Allow-Origin header accordingly. You should never use a wildcard (*) for multiple origins as it allows all origins.
-ALLOWED_ORIGINS = ["http://csse280-03.csse.rose-hulman.edu:8080", "https://csse280-03.csse.rose-hulman.edu:8081"]
+ALLOWED_ORIGINS = ["http://csse280-03.csse.rose-hulman.edu:80", "https://csse280-03.csse.rose-hulman.edu:8081"]
 
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS
 # https://fetch.spec.whatwg.org/#http-cors-protocol
@@ -31,4 +31,4 @@ def shutdown():
     os._exit(0)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8081)
+    app.run(host='0.0.0.0', port=8080)
