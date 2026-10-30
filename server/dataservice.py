@@ -20,7 +20,7 @@ def load_db():
             "unit": "lb",
             "barType": "Olympic",
             "platesPerSide": [45],
-            "collarType": "None",
+            "cuffType": "None",
             "totalWeight": 135
         })
         global_db.save()
