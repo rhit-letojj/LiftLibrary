@@ -11,7 +11,6 @@ if (document.getElementById("f")) {
     const msg = document.getElementById("msg");
     const foot = document.getElementById("foot");
     const title = document.getElementById("formTitle");
-    const apiBase = `${window.location.protocol}//${window.location.hostname}:8080`;
 
     let registering = false;
 
@@ -93,7 +92,7 @@ if (document.getElementById("f")) {
 
         try {
             const response = await fetch(
-                `${apiBase}/api/${registering ? "register" : "login"}`,
+                `/api/${registering ? "register" : "login"}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
