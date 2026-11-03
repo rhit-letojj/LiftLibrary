@@ -50,6 +50,12 @@ function App() {
                             <button type="button" hidden>Cancel edit</button>
                         </div>
                     </section>
+                    <div className="panels">
+                        <section className="card">
+                            <h2>Plates</h2>
+                            <div className="opts" id="plates"></div>
+                        </section>
+                    </div>
                 </div>
 
                 <aside className="card side">
