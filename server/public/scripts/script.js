@@ -11,6 +11,7 @@ if (document.getElementById("f")) {
     const msg = document.getElementById("msg");
     const foot = document.getElementById("foot");
     const title = document.getElementById("formTitle");
+    const apiBase = `${window.location.protocol}//${window.location.hostname}:8080`;
 
     let registering = false;
 
@@ -55,7 +56,7 @@ if (document.getElementById("f")) {
         }
     };
 
-    form.onsubmit = function (event) {
+    form.onsubmit = async function (event) {
         event.preventDefault();
 
         clearErrors();
@@ -88,41 +89,44 @@ if (document.getElementById("f")) {
             return;
         }
 
-        const users = JSON.parse(
-            localStorage.getItem("liftLibraryUsers") || "{}"
-        );
+        go.disabled = true;
 
-        if (registering) {
-            if (users[username]) {
-                document.getElementById("eUser").textContent =
-                    "Username already exists.";
-                return;
-            }
-
-            users[username] = password;
-
-            localStorage.setItem(
-                "liftLibraryUsers",
-                JSON.stringify(users)
+        try {
+            const response = await fetch(
+                `${apiBase}/api/${registering ? "register" : "login"}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                }
             );
+            const result = await response.json();
 
-            registering = false;
-
-            pass.value = "";
-            conf.value = "";
-
-            updateMode();
-
-            msg.textContent =
-                "Account created! You can now log in.";
-        } else {
-            if (!users[username] || users[username] !== password) {
-                document.getElementById("ePass").textContent =
-                    "Incorrect username or password.";
+            if (!response.ok) {
+                if (registering && response.status === 409) {
+                    document.getElementById("eUser").textContent = result.error;
+                } else if (!registering && response.status === 401) {
+                    document.getElementById("ePass").textContent = result.error;
+                } else {
+                    msg.textContent = result.error || "Request failed.";
+                }
                 return;
             }
 
-            window.location.href = "home.html";
+            if (registering) {
+                registering = false;
+                pass.value = "";
+                conf.value = "";
+                updateMode();
+                msg.textContent = "Account created! You can now log in.";
+            } else {
+                sessionStorage.setItem("liftLibraryUser", username);
+                window.location.href = "home.html";
+            }
+        } catch {
+            msg.textContent = "Could not connect to the account server.";
+        } finally {
+            go.disabled = false;
         }
     };
 

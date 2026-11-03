@@ -1,1 +1,1 @@
-{"pr_1":{"userId":"test_user","liftName":"Bench Press","liftDate":"2026-10-30","unit":"lb","barType":"Olympic","platesPerSide":[45],"cuffType":"None","totalWeight":135}}
+{"test_user":{"password_hash":null,"lifts":{"pr_1":{"liftName":"Bench Press","liftDate":"2026-10-30","unit":"lb","barType":"Olympic","platesPerSide":[45],"cuffType":"None","totalWeight":135}}}}
