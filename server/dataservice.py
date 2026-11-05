@@ -1,10 +1,83 @@
 import pickledb
 import os
 import uuid
+from datetime import date
 from werkzeug.security import check_password_hash, generate_password_hash
 
 db_path = os.path.join(os.path.dirname(__file__), "liftlibrary.db")
 global_db = None
+
+UNITS = ("lb", "kg")
+BAR_OPTIONS = (
+    {"name": "Olympic", "weights": {"lb": 45, "kg": 20}},
+    {"name": "Women's", "weights": {"lb": 35, "kg": 15}},
+    {"name": "Training", "weights": {"lb": 15, "kg": 10}},
+)
+PLATES = {
+    "lb": (45, 35, 25, 10, 5, 2.5),
+    "kg": (25, 20, 15, 10, 5, 2.5, 1.25),
+}
+CUFF_OPTIONS = (
+    {"name": "None", "weights": {"lb": 0, "kg": 0}},
+    {"name": "Standard collars", "weights": {"lb": 5, "kg": 2.5}},
+)
+
+
+def get_options():
+    return {
+        "units": list(UNITS),
+        "bars": list(BAR_OPTIONS),
+        "plates": {unit: list(weights) for unit, weights in PLATES.items()},
+        "cuffs": list(CUFF_OPTIONS),
+    }
+
+
+def validate_lift(lift):
+    if not isinstance(lift, dict):
+        raise ValueError("Lift details are required.")
+
+    lift_name = lift.get("liftName")
+    lift_date = lift.get("liftDate")
+    unit = lift.get("unit")
+    bar_type = lift.get("barType")
+    plates_per_side = lift.get("platesPerSide")
+    cuff_type = lift.get("cuffType")
+
+    if not isinstance(lift_name, str) or not lift_name.strip() or len(lift_name.strip()) > 40:
+        raise ValueError("Lift name must be between 1 and 40 characters.")
+    if not isinstance(lift_date, str):
+        raise ValueError("A valid lift date is required.")
+    try:
+        date.fromisoformat(lift_date)
+    except ValueError:
+        raise ValueError("A valid lift date is required.")
+    if unit not in UNITS:
+        raise ValueError("Choose lb or kg.")
+    if not isinstance(plates_per_side, list) or len(plates_per_side) > 20:
+        raise ValueError("Plate selection is invalid.")
+    if any(
+        isinstance(weight, bool)
+        or not isinstance(weight, (int, float))
+        or weight not in PLATES[unit]
+        for weight in plates_per_side
+    ):
+        raise ValueError("One or more plate weights are invalid for the selected unit.")
+
+    bar = next((item for item in BAR_OPTIONS if item["name"] == bar_type), None)
+    cuffs = next((item for item in CUFF_OPTIONS if item["name"] == cuff_type), None)
+    if bar is None or cuffs is None:
+        raise ValueError("Choose a valid bar and collar option.")
+
+    total_weight = bar["weights"][unit] + cuffs["weights"][unit] + sum(plates_per_side) * 2
+    return {
+        "liftName": lift_name.strip(),
+        "liftDate": lift_date,
+        "unit": unit,
+        "barType": bar_type,
+        "platesPerSide": list(plates_per_side),
+        "cuffType": cuff_type,
+        "totalWeight": round(total_weight, 2),
+    }
 
 
 def load_db():
@@ -67,6 +140,8 @@ def create_user(username, password):
     username = username.strip()
     if not username or not password:
         raise ValueError("Username and password are required.")
+    if len(username) > 20:
+        raise ValueError("Username must be 20 characters or fewer.")
 
     db = get_db()
     if db.get(username) is not None:
@@ -95,7 +170,7 @@ def add_lift(username, lift):
         raise ValueError("User does not exist.")
 
     lift_id = uuid.uuid4().hex
-    user["lifts"][lift_id] = lift
+    user.setdefault("lifts", {})[lift_id] = validate_lift(lift)
     db.set(username, user)
     db.save()
     return lift_id
@@ -103,5 +178,28 @@ def add_lift(username, lift):
 
 def get_prs(username):
     user = get_db().get(username)
-    return user["lifts"] if user else {}
+    return user.get("lifts", {}) if user else {}
 
+
+def update_lift(username, lift_id, lift):
+    db = get_db()
+    user = db.get(username)
+    if not user or lift_id not in user.get("lifts", {}):
+        return False
+
+    user["lifts"][lift_id] = validate_lift(lift)
+    db.set(username, user)
+    db.save()
+    return True
+
+
+def delete_lift(username, lift_id):
+    db = get_db()
+    user = db.get(username)
+    if not user or lift_id not in user.get("lifts", {}):
+        return False
+
+    del user["lifts"][lift_id]
+    db.set(username, user)
+    db.save()
+    return True

@@ -1,16 +1,15 @@
-# React + Vite
+# Lift Library frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The React/Vite app is the only frontend. Flask remains the API and serves the production React build.
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Start Flask from the repository root: `python server/httpserver.py` (API at `http://127.0.0.1:8080`).
+2. In another terminal, run `cd react` and `npm run dev`.
+3. Open the Vite URL shown in the terminal. Vite proxies `/api` requests to Flask.
 
-## React Compiler
+## Production build
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+From `react`, run `npm run build`. Then start Flask; it serves `react/dist` and the API from the same origin. Set `LIFTLIBRARY_SECRET_KEY` to a persistent, randomly generated secret before deployment so login sessions remain valid across restarts. The app generates an ephemeral key when the variable is omitted, suitable only for local development.
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+The server stores users and lifts in `server/liftlibrary.db`. Passwords are hashed by the Python backend; browser code only communicates with the API.
