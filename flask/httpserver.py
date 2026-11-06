@@ -147,11 +147,6 @@ def delete_lift(lift_id):
     return flask.jsonify(message="Lift deleted.")
 
 
-@app.get("/shutdown")
-def shutdown():
-    os._exit(0)
-
-
 @app.get("/", defaults={"path": ""})
 @app.get("/<path:path>")
 def serve_react(path):
@@ -173,4 +168,5 @@ def serve_react(path):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    port = int(os.environ.get("PORT", "8080"))
+    app.run(host="0.0.0.0", port=port)
