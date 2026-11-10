@@ -12,6 +12,7 @@ const today = () => {
 function Header({ username, onLogout }) {
   return (
     <header className="site-header">
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <a className="brand" href="/">Lift Library</a>
       <nav aria-label="Main navigation">
         <a href="/">Barbell builder</a>
@@ -83,41 +84,60 @@ function LoginPage({ onLogin }) {
     setMessage('');
   }
 
+  useEffect(() => {
+    const firstInvalidField = ['username', 'password', 'confirmation']
+      .find((field) => errors[field]);
+    if (firstInvalidField) {
+      document.getElementById(`login-${firstInvalidField}`)?.focus();
+    }
+  }, [errors]);
+
   return (
-    <main className="login-page">
+    <main className="login-page" id="main-content" tabIndex="-1">
       <section className="card login-card">
         <h1>{registering ? 'Register' : 'Log in'}</h1>
         <form onSubmit={submit} noValidate>
           <label>
             Username
             <input
+              aria-describedby={errors.username ? 'username-error' : undefined}
+              aria-invalid={Boolean(errors.username)}
               autoComplete="username"
+              id="login-username"
               maxLength={20}
               onChange={(event) => setUsername(event.target.value)}
               value={username}
             />
-            {errors.username && <span className="field-error">{errors.username}</span>}
+            {errors.username && <span className="field-error" id="username-error">{errors.username}</span>}
           </label>
           <label>
             Password
             <input
+              aria-describedby={errors.password ? 'password-error' : undefined}
+              aria-invalid={Boolean(errors.password)}
               autoComplete={registering ? 'new-password' : 'current-password'}
+              id="login-password"
               onChange={(event) => setPassword(event.target.value)}
               type={showPassword ? 'text' : 'password'}
               value={password}
             />
-            {errors.password && <span className="field-error">{errors.password}</span>}
+            {errors.password && <span className="field-error" id="password-error">{errors.password}</span>}
           </label>
           {registering && (
             <label>
               Confirm password
               <input
+                aria-describedby={errors.confirmation ? 'confirmation-error' : undefined}
+                aria-invalid={Boolean(errors.confirmation)}
                 autoComplete="new-password"
+                id="login-confirmation"
                 onChange={(event) => setConfirmation(event.target.value)}
                 type={showPassword ? 'text' : 'password'}
                 value={confirmation}
               />
-              {errors.confirmation && <span className="field-error">{errors.confirmation}</span>}
+              {errors.confirmation && (
+                <span className="field-error" id="confirmation-error">{errors.confirmation}</span>
+              )}
             </label>
           )}
           <label className="checkbox-label">
@@ -285,12 +305,12 @@ function Builder({ username, options }) {
   const sortedLifts = [...lifts].sort((a, b) => b.liftDate.localeCompare(a.liftDate));
 
   return (
-    <main className="builder-layout">
+    <main className="builder-layout" id="main-content" tabIndex="-1">
       <div className="builder-content">
         <section className="card builder-card">
           <h1>Barbell Builder</h1>
           <BarbellView bar={bar} cuffs={cuffs} plates={plates} />
-          <p className="total">
+          <p aria-atomic="true" aria-live="polite" className="total">
             {total.toLocaleString(undefined, { maximumFractionDigits: 2 })} {unit}
           </p>
           <p aria-live="polite" className={error ? 'message error' : 'message'}>{error || message}</p>
@@ -396,9 +416,9 @@ function Builder({ username, options }) {
         </div>
       </div>
 
-      <aside className="card library">
+      <aside aria-labelledby="library-heading" className="card library">
         <div className="library-heading">
-          <h2>Library</h2>
+          <h2 id="library-heading">Library</h2>
           {username && <span className="library-user">{username}</span>}
         </div>
         {!username ? (
@@ -461,9 +481,9 @@ function App() {
     <>
       <Header onLogout={logout} username={username} />
       {startupError ? (
-        <main className="startup-error" role="alert">{startupError}</main>
+        <main className="startup-error" id="main-content" role="alert" tabIndex="-1">{startupError}</main>
       ) : !options ? (
-        <main className="startup-error">Loading Lift Library…</main>
+        <main className="startup-error" id="main-content" tabIndex="-1">Loading Lift Library…</main>
       ) : isLoginPage ? (
         <LoginPage onLogin={setUsername} />
       ) : (

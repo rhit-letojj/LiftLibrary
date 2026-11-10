@@ -28,6 +28,23 @@
   gap: 10px;
 }
 
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 16px;
+  z-index: 10;
+  padding: 10px 14px;
+  border-radius: 0 0 7px 7px;
+  background: var(--surface);
+  color: var(--ink);
+  transform: translateY(-150%);
+}
+
+.skip-link:focus {
+  position: fixed;
+  transform: translateY(0);
+}
+
 .site-header nav {
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -298,8 +315,8 @@ input:focus-visible {
 }
 
 .primary {
-  border-color: var(--accent);
-  background: var(--accent);
+  border-color: #c62828;
+  background: #c62828;
   color: #fff;
   font-weight: 700;
 }
