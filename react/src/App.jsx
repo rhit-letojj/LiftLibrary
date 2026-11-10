@@ -2,6 +2,29 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from './api.js';
 import './App.css';
 
+const plateImages = import.meta.glob('./assets/plates/*.svg', {
+  eager: true,
+  import: 'default',
+  query: '?url',
+});
+
+function plateImagePath(unit, weight) {
+  return plateImages[`./assets/plates/${unit}-${String(weight).replace('.', '-')}.svg`];
+}
+
+const plateThicknessMm = {
+  lb: { 45: 60, 35: 46.7, 25: 33.3, 10: 13.3, 5: 6.7, 2.5: 3.3 },
+  kg: { 25: 60, 20: 60, 15: 30, 10: 20, 5: 10, 2.5: 5, 1.25: 2.5 },
+};
+
+const sleeveLengthMm = 445;
+const collarWidthMm = 26.4;
+
+const plateFaceColors = {
+  lb: { 45: '#b8bec3', 35: '#aeb4b9', 25: '#c4c9cd', 10: '#a8afb4', 5: '#c6cacf', 2.5: '#aeb4b9' },
+  kg: { 25: '#d71920', 20: '#005baa', 15: '#f3c300', 10: '#00843d', 5: '#f5f5f5', 2.5: '#d71920', 1.25: '#00843d' },
+};
+
 const today = () => {
   const date = new Date();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -166,31 +189,59 @@ function LoginPage({ onLogin }) {
   );
 }
 
-function PlateStack({ plates, side }) {
+function PlateStack({ plates, side, unit }) {
   return (
-    <div aria-label={`${side} plates`} className={`plate-stack ${side}`}>
+    <div aria-label={`${side} ${unit} plates`} className={`plate-stack ${side}`}>
       {plates.map((weight, index) => (
         <span
-          aria-label={`${weight} plate`}
+          aria-label={`${weight} ${unit} plate`}
           className={`plate plate-${String(weight).replace('.', '-')}`}
           key={`${side}-${index}-${weight}`}
           title={`${weight}`}
-        />
+        >
+          <img
+            alt=""
+            aria-hidden="true"
+            draggable="false"
+            src={plateImagePath(unit, weight)}
+            style={{ aspectRatio: `${plateThicknessMm[unit][weight]} / 450` }}
+          />
+        </span>
       ))}
     </div>
   );
 }
 
-function BarbellView({ plates, bar, cuffs }) {
+function PlateFace({ unit, weight }) {
+  const color = plateFaceColors[unit][weight];
+  const isSteel = unit === 'lb';
   return (
-    <div aria-label={`Barbell with ${plates.length} plates per side`} className="barbell-view">
-      <PlateStack plates={plates} side="left" />
-      <span className="bar-sleeve" />
+    <svg aria-hidden="true" className={`plate-face${isSteel ? ' steel' : ''}`} viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="47" fill={color} stroke={isSteel ? '#555b60' : '#171719'} strokeWidth="3" />
+      <circle cx="50" cy="50" r="34" fill="none" stroke={isSteel ? '#eef0f2' : '#fff'} strokeOpacity=".62" strokeWidth="3" />
+      <circle cx="50" cy="50" r="12" fill="#171719" stroke={isSteel ? '#555b60' : '#fff'} strokeWidth="3" />
+      {isSteel && <circle cx="50" cy="50" r="42" fill="none" stroke="#fff" strokeOpacity=".26" strokeWidth="2" />}
+    </svg>
+  );
+}
+
+function BarbellView({ plates, bar, cuffs, unit }) {
+  return (
+    <div
+      aria-label={`Barbell with ${plates.length} plate${plates.length === 1 ? '' : 's'} per side, in ${unit}. Drawn to scale using a 2,200 millimeter bar and 450 millimeter plate diameter.`}
+      className="barbell-view"
+    >
+      <span className="bar-sleeve bar-sleeve-left" />
       <span className="bar-shaft" />
-      <span className="bar-sleeve" />
-      <PlateStack plates={plates} side="right" />
-      {cuffs !== 'None' && <span className="collar collar-left" />}
-      {cuffs !== 'None' && <span className="collar collar-right" />}
+      <span className="bar-sleeve bar-sleeve-right" />
+      <div className="plate-load plate-load-left">
+        <PlateStack plates={plates} side="left" unit={unit} />
+        {cuffs !== 'None' && <span className="collar" />}
+      </div>
+      <div className="plate-load plate-load-right">
+        <PlateStack plates={plates} side="right" unit={unit} />
+        {cuffs !== 'None' && <span className="collar" />}
+      </div>
       <span className="bar-label">{bar}</span>
     </div>
   );
@@ -211,6 +262,8 @@ function Builder({ username, options }) {
 
   const barOption = options.bars.find((item) => item.name === bar) || options.bars[0];
   const cuffOption = options.cuffs.find((item) => item.name === cuffs) || options.cuffs[0];
+  const sleeveLoadLimit = sleeveLengthMm - (cuffs === 'None' ? 0 : collarWidthMm);
+  const loadedPlateThickness = plates.reduce((sum, weight) => sum + plateThicknessMm[unit][weight], 0);
   const total = useMemo(
     () => barOption.weights[unit] + plates.reduce((sum, weight) => sum + weight * 2, 0) + cuffOption.weights[unit],
     [barOption, plates, unit, cuffOption],
@@ -309,7 +362,10 @@ function Builder({ username, options }) {
       <div className="builder-content">
         <section className="card builder-card">
           <h1>Barbell Builder</h1>
-          <BarbellView bar={bar} cuffs={cuffs} plates={plates} />
+          <BarbellView bar={bar} cuffs={cuffs} plates={plates} unit={unit} />
+          <p className="plate-scale-note">
+            Scale: 2,200 mm bar and 450 mm plate diameter; thicknesses are IPF-limit-based estimates.
+          </p>
           <p aria-atomic="true" aria-live="polite" className="total">
             {total.toLocaleString(undefined, { maximumFractionDigits: 2 })} {unit}
           </p>
@@ -364,21 +420,28 @@ function Builder({ username, options }) {
         <div className="option-panels">
           <section className="card">
             <h2>Plates</h2>
+            <p className="plate-capacity">
+              {Math.max(0, sleeveLoadLimit - loadedPlateThickness).toFixed(1)} mm sleeve space remaining per side.
+              Plates that do not fit are disabled.
+            </p>
             <div className="options-grid">
-              {options.plates[unit].map((weight) => (
+              {options.plates[unit].map((weight) => {
+                const fitsSleeve = loadedPlateThickness + plateThicknessMm[unit][weight] <= sleeveLoadLimit;
+                return (
                 <button
-                  aria-label={`Add ${weight} ${unit} plates to both sides`}
+                  aria-label={`Add ${weight} ${unit} plates to both sides${fitsSleeve ? '' : '; does not fit on the remaining sleeve'}`}
                   className="option-button"
-                  disabled={plates.length >= 20}
+                  disabled={!fitsSleeve || plates.length >= 20}
                   key={weight}
                   onClick={() => setPlates((current) => [...current, weight])}
-                  title={plates.length >= 20 ? 'Maximum 20 plates per side' : undefined}
+                  title={!fitsSleeve ? 'This plate will not fit on the remaining sleeve space.' : undefined}
                   type="button"
                 >
-                  <span className={`plate-swatch plate-${String(weight).replace('.', '-')}`} />
+                  <PlateFace unit={unit} weight={weight} />
                   {weight} {unit}
                 </button>
-              ))}
+                );
+              })}
             </div>
           </section>
           <section className="card">
@@ -400,17 +463,24 @@ function Builder({ username, options }) {
           <section className="card">
             <h2>Collars</h2>
             <div className="options-list">
-              {options.cuffs.map((item) => (
+              {options.cuffs.map((item) => {
+                const exceedsSleeve = item.name !== 'None'
+                  && loadedPlateThickness + collarWidthMm > sleeveLengthMm;
+                return (
                 <button
+                  aria-label={`${item.name}, ${item.weights[unit]} ${unit}${exceedsSleeve ? '; does not fit with current plates' : ''}`}
                   aria-pressed={cuffs === item.name}
                   className={cuffs === item.name ? 'choice selected' : 'choice'}
+                  disabled={exceedsSleeve}
                   key={item.name}
                   onClick={() => setCuffs(item.name)}
+                  title={exceedsSleeve ? 'Remove a plate to make room for the collar.' : undefined}
                   type="button"
                 >
                   <span>{item.name}</span><span>+{item.weights[unit]} {unit}</span>
                 </button>
-              ))}
+                );
+              })}
             </div>
           </section>
         </div>
