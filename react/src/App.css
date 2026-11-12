@@ -170,6 +170,10 @@
   height: 100%;
 }
 
+.plate-stack.left {
+  flex-direction: row-reverse;
+}
+
 .plate {
   display: block;
   height: 100%;
